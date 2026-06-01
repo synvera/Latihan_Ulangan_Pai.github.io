@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soal Pilihan Ganda — Pendidikan Agama Islam</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f2;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .wrapper { max-width: 760px; margin: 0 auto; }
+
+  .header {
+    background: #fff;
+    border: 1px solid #e5e5e0;
+    border-radius: 14px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; color: #111; }
+  .header p { font-size: 13px; color: #777; margin-top: 4px; }
+  .progress-bar {
+    height: 4px;
+    background: #eee;
+    border-radius: 99px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 99px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #444;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .btn:hover { background: #f5f5f2; }
+  .btn.active { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; font-weight: 500; }
+  .score-badge {
+    margin-left: auto;
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    background: #fff;
+    color: #666;
+    border: 1px solid #e5e5e0;
+  }
+  .score-badge span { font-weight: 600; color: #111; }
+
+  .question-card {
+    background: #fff;
+    border: 1px solid #e5e5e0;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .question-card.answered { border-color: #c7d2fe; }
+  .question-card.correct { border-color: #86efac; background: #f0fdf4; }
+  .question-card.wrong { border-color: #fca5a5; background: #fef2f2; }
+
+  .q-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  .q-num {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .q-num.correct-num { background: #dcfce7; color: #16a34a; }
+  .q-num.wrong-num { background: #fee2e2; color: #dc2626; }
+  .q-text { font-size: 14px; line-height: 1.65; color: #1a1a1a; }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: 40px;
+  }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e5e5e0;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #fafafa;
+    transition: background 0.15s, border-color 0.15s;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+  }
+  .option:hover:not(:disabled) { background: #f0f0f0; border-color: #ccc; }
+  .option.selected { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+  .option.correct-ans { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+  .option.wrong-ans { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+  .option:disabled { cursor: default; }
+  .option-label {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0.6;
+  }
+
+  .q-result {
+    margin-left: 40px;
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    display: none;
+  }
+  .q-result.show { display: block; }
+  .q-result.success { color: #15803d; background: #dcfce7; }
+  .q-result.danger { color: #dc2626; background: #fee2e2; }
+
+  .submit-area {
+    background: #fff;
+    border: 1px solid #e5e5e0;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .summary { font-size: 13px; color: #777; }
+  .btn-submit {
+    font-size: 14px;
+    padding: 9px 28px;
+    border-radius: 10px;
+    border: none;
+    background: #1a1a1a;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    font-family: inherit;
+  }
+  .btn-submit:hover:not(:disabled) { opacity: 0.82; }
+  .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <h1>Soal Pilihan Ganda — Pendidikan Agama Islam</h1>
+    <p>Pilih satu jawaban yang paling tepat untuk setiap soal</p>
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn active" onclick="filterQuestions('all')">Semua soal</button>
+    <button class="btn" onclick="filterQuestions('unanswered')">Belum dijawab</button>
+    <button class="btn" onclick="filterQuestions('answered')">Sudah dijawab</button>
+    <div class="score-badge">Terjawab: <span id="answered-count">0</span> / <span id="total-count">50</span></div>
+  </div>
+
+  <div id="questions-container"></div>
+
+  <div class="submit-area">
+    <div class="summary" id="summary-text">Jawab semua soal untuk melihat nilai akhir</div>
+    <button class="btn-submit" id="submit-btn" onclick="submitAll()" disabled>Kumpulkan Jawaban</button>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  { q: "Tidak semua wanita dapat dinikahi. Al Qur'an menjelaskan tentang siapa saja yang tidak boleh dinikahi yang dikenal dengan istilah mahram. Berikut ini yang <strong>tidak termasuk</strong> mahram, yaitu …", options: ["Anak-anak perempuan dari saudara laki-laki bapak", "Anak perempuan dari saudara perempuan ibu", "Anak perempuan dari saudara laki-laki yang sekandung dan anak tiri", "Saudara perempuan sekandung, sebapak dan seibu", "Ibu sepersusuan, saudara sepersusuan"], answer: 1 },
+  { q: "Tujuan pernikahan dalam Q.S Ar Rum : 21 adalah untuk …", options: ["Memperoleh rasa cinta dan kasih sayang", "Memperoleh kebutuhan biologis secara sah", "Memperoleh keturunan yang sah", "Memperoleh ketenangan hidup", "Mewujudkan keluarga yang berkecukupan"], answer: 0 },
+  { q: "Jaka adalah putra Bu Riani. Sewaktu bayi Jaka pernah disusui oleh Bu Nindi sebanyak lima kali, karena saat itu Bu Riani sedang menjalani operasi di rumah sakit. Saat ini, Jaka berusia 25 tahun dan bermaksud menikahi Jumiati putri kandung Bu Nindi yang berusia 25 tahun. Hukum pernikahan tersebut adalah …", options: ["Jaiz", "Sunah", "Wajib", "Makruh", "Haram"], answer: 4 },
+  { q: "Salah satu dari pernikahan yang terlarang adalah …", options: ["Nikah mut'ah", "Nikah seagama", "Menikahi budak muslim", "Menikahi janda kaya", "Menikahi perempuan yang cantik"], answer: 0 },
+  { q: "Tujuan pernikahan berdasarkan Q.S. Ar-Rum: 21 adalah untuk …", options: ["Memperoleh keturunan yang sah", "Mewujudkan keluarga yang mapan secara ekonomi", "Memenuhi kebutuhan seksual yang sah", "Memperoleh ketenangan, rasa cinta dan kasih sayang", "Mencari kesenangan semata"], answer: 3 },
+  { q: "Pernikahan siri disebut juga pernikahan yang sah menurut Islam, tapi dilakukan …", options: ["Secara diam-diam", "Tanpa melalui proses pencatatan oleh pemerintah", "Tanpa saksi", "Tanpa wali", "Tanpa pemberian mahar"], answer: 1 },
+  { q: "Pernikahan berstatus sah jika antara lain ada walinya. Adapun orang yang <strong>tidak sah</strong> menjadi wali pengantin wanita adalah …", options: ["Kakek mempelai laki-laki", "Bapak kandung mempelai perempuan", "Anak saudara kandung laki-laki", "Paman dari pihak bapak", "Anak laki-laki dari paman dari ibu"], answer: 4 },
+  { q: "Suami istri harus berusaha menciptakan suasana tentram dan damai dalam keluarga. Berikut ini yang <strong>tidak mendukung</strong> suasana tersebut adalah …", options: ["Membiasakan ucapan yang santun dalam keluarga", "Menyibukkan diri dengan salat sunah selama berada di rumah", "Menemani anak-anak mengerjakan PR atau tugas sekolah lainnya", "Mengajak keluarga untuk berwisata bersama", "Menanamkan nilai-nilai keislaman pada keluarga"], answer: 1 },
+  { q: "Pemberian wajib dari suami terhadap istri pada saat prosesi pernikahan disebut …", options: ["Kado", "Bingkisan", "Nafkah", "Mahar", "Hadiah"], answer: 3 },
+  { q: "Prosesi penyerahan pengantin wanita dari pihak wali lalu dijawab dengan pernyataan menerima dari pengantin pria disebut …", options: ["Ijab qabul", "Calon suami", "Calon isteri", "Wali nikah", "Dua orang saksi"], answer: 0 },
+  { q: "Berikut ini yang <strong>bukan</strong> merupakan hikmah pernikahan, yaitu …", options: ["Merupakan jalan keluar yang paling baik untuk memenuhi kebutuhan seksual", "Merupakan jalan terbaik untuk memuliakan anak", "Mempererat tali kekeluargaan tanpa dilandasi rasa saling menyayangi", "Menimbulkan naluri kebapakan dan keibuan", "Menimbulkan sikap rajin dan sungguh-sungguh dalam bekerja"], answer: 2 },
+  { q: "Agar terhindar dari fitnah yang mungkin timbul karena ketidaktahuan bahwa keduanya telah resmi menjadi suami istri, maka dalam pernikahan diadakan …", options: ["Walimah", "Mahar", "Nikah", "Ijab Kabul", "Sah"], answer: 0 },
+  { q: "Seorang pemuda berusia 25 tahun ingin menikah tapi belum mampu secara ekonomi. Agar selamat dari perbuatan dosa, sebaiknya ia …", options: ["Menikah dengan minta bantuan orangtua", "Menikah dengan mengadakan resepsi sederhana", "Menahan keinginannya karena dalam kondisi tidak wajib", "Tunda keinginan untuk menikah sampai cukup secara materi", "Banyak berpuasa untuk meredam nafsu sambil mengumpulkan materi"], answer: 4 },
+  { q: "Di antara syarat sahnya pernikahan adalah adanya dua orang saksi. Orang yang menjadi saksi nikah disyaratkan sebagai berikut, <strong>kecuali</strong> …", options: ["Mahram", "Balig dan berakal sehat", "Hadir pada waktu akad nikah", "Dapat melihat dan mendengar", "Laki-laki"], answer: 0 },
+  { q: "Salah satu sebab dilarangnya suatu pernikahan adalah mahram. Wanita berikut yang <strong>tidak termasuk</strong> mahram adalah …", options: ["Ibu kandung", "Saudara sepersusuan", "Saudara kandung", "Kakak mertua", "Anak paman dari bapak"], answer: 0 },
+  { q: "Berikut ini yang <strong>tidak berhak</strong> menjadi wali nikah adalah …", options: ["Ayah", "Kakek", "Kakak/adik", "Saudara laki-laki seayah", "Paman seibu"], answer: 4 },
+  { q: "Arman membeli barang bermerek mahal hanya agar dianggap keren oleh teman-temannya. Sikap Arman bertentangan dengan nilai …", options: ["Ikhlas", "Amanah", "Zuhud", "Syukur", "Toleransi"], answer: 2 },
+  { q: "Seseorang rajin bersedekah tetapi selalu meminta agar namanya diumumkan. Sikap tersebut termasuk …", options: ["Ikhlas", "Zuhud", "Amanah", "Riya", "Tawakal"], answer: 3 },
+  { q: "Menghapus unggahan yang menyinggung orang lain dan meminta maaf secara terbuka merupakan bentuk …", options: ["Tanggung jawab dan menjaga kehormatan", "Ketakutan terhadap komentar netizen", "Strategi mencari perhatian", "Sikap tidak konsisten", "Kelemahan pribadi"], answer: 0 },
+  { q: "Rukun nikah merupakan hal-hal yang harus dipenuhi agar pernikahan menjadi sah. Berikut yang <strong>tidak termasuk</strong> rukun nikah adalah …", options: ["Ada calon mempelai", "Ada wali", "Ada ijab dan qabul", "Ada dua saksi", "Ada pesta pernikahan"], answer: 4 },
+  { q: "Wali nikah harus memiliki syarat-syarat tertentu. Yang <strong>tidak termasuk</strong> syarat wali nikah adalah …", options: ["Ayah", "Kakek", "Saudara laki-laki sekandung", "Balig dan berakal sehat", "Saudara perempuan sekandung"], answer: 4 },
+  { q: "Sikap zuhud seorang pelajar dapat ditunjukkan dengan cara …", options: ["Menolak belajar teknologi", "Hidup sederhana dan fokus pada manfaat", "Menghindari pergaulan", "Tidak mau bekerja keras", "Meninggalkan sekolah"], answer: 1 },
+  { q: "Siswa yang zuhud akan menggunakan media sosial untuk …", options: ["Pamer kekayaan", "Membandingkan hidup dengan orang lain", "Hal-hal yang bermanfaat dan tidak berlebihan", "Mengikuti semua tren viral", "Mencari popularitas semata"], answer: 2 },
+  { q: "Ketika Ustad Jefri Al Bukhori wafat dalam sebuah kecelakaan, maka iddah Umi Pipik Dian Irawati istrinya selama …", options: ["2 bulan 10 hari", "3 bulan 10 hari", "4 bulan 10 hari", "5 bulan 5 hari", "5 bulan 7 hari"], answer: 2 },
+  { q: "Rasulullah SAW bersabda, <em>'Bahwa nikah itu termasuk sunnah, barangsiapa tidak melaksanakan sunnahku, maka …'</em>", options: ["Nikahilah wanita yang kamu cintai", "Mendatangkan rizki", "Mendatangkan ketenangan", "Tidak termasuk golonganku", "Tidak bermartabat"], answer: 3 },
+  { q: "Seorang konten kreator muslim memilih membuat video edukasi daripada konten hinaan demi popularitas. Sikap tersebut menunjukkan …", options: ["Ikhlas dan tanggung jawab digital", "Takut kehilangan pengikut", "Tidak memahami media sosial", "Kurang kreatif", "Menolak perkembangan teknologi"], answer: 0 },
+  { q: "Kesimpulan terbaik mengenai etika bermedia sosial menurut Islam adalah …", options: ["Media sosial bebas digunakan tanpa batas", "Popularitas lebih penting daripada akhlak", "Media sosial harus digunakan secara bijak", "Semua aktivitas media sosial diperbolehkan", "Konten viral lebih penting daripada nilai agama"], answer: 2 },
+  { q: "Bagi seseorang yang memiliki keinginan kuat untuk menikah dan apabila tidak segera menikah dikhawatirkan terjerumus pada perbuatan zina, hukum menikah adalah …", options: ["Boleh", "Haram", "Makruh", "Wajib", "Sunnah"], answer: 3 },
+  { q: "Dimas Aditya kelas XII SMA sudah ingin menikah tapi belum siap secara ekonomi, akhirnya ia menunda pernikahan. Hukum menikah dalam kondisi ini adalah …", options: ["Boleh", "Haram", "Makruh", "Wajib", "Sunnah"], answer: 4 },
+  { q: "Gaya hidup berlebihan yang sering dipamerkan di media sosial dapat menyebabkan …", options: ["Meningkatnya rasa syukur", "Tumbuhnya sikap rendah hati", "Sikap iri dan materialistis", "Bertambahnya kepedulian sosial", "Semangat berbagi"], answer: 2 },
+  { q: "Seorang siswa membantu korban banjir tanpa mengunggahnya ke media sosial. Sikap tersebut mencerminkan …", options: ["Kurang percaya diri", "Ikhlas dalam beramal", "Tidak menghargai teknologi", "Takut diketahui orang lain", "Tidak peduli sosial"], answer: 1 },
+  { q: "Ketika mengetahui rahasia pribadi temannya, Riko memilih menyimpannya dan memberi nasihat secara pribadi. Sikap Riko menunjukkan …", options: ["Menutup diri", "Ketakutan sosial", "Sikap acuh tak acuh", "Menghindari tanggung jawab", "Menjaga kehormatan orang lain"], answer: 4 },
+  { q: "Dalam Islam, menjaga etika bermedia sosial penting karena setiap tulisan dan komentar akan …", options: ["Hilang begitu saja", "Dilupakan pengguna lain", "Tidak berpengaruh terhadap kehidupan", "Menjadi hiburan biasa", "Dipertanggungjawabkan di hadapan Allah"], answer: 4 },
+  { q: "Pergaulan bebas di kalangan remaja dapat merusak kehormatan karena …", options: ["Membuat remaja kehilangan kontrol diri", "Mengurangi waktu belajar", "Mengurangi prestasi olahraga", "Menambah biaya hidup", "Mengurangi aktivitas media sosial"], answer: 0 },
+  { q: "Seorang siswa menolak ajakan teman untuk ikut balapan liar karena khawatir merusak nama baik dirinya dan keluarga. Sikap tersebut menunjukkan …", options: ["Takut kepada teman", "Menjaga kehormatan diri", "Tidak setia kawan", "Kurang percaya diri", "Tidak berani mengambil risiko"], answer: 1 },
+  { q: "Nadia memilih berpakaian sopan meskipun sedang mengikuti tren modern di media sosial. Sikap Nadia mencerminkan …", options: ["Sikap tertutup", "Menolak perkembangan zaman", "Upaya menjaga kehormatan diri", "Takut terhadap lingkungan", "Tidak percaya diri"], answer: 2 },
+  { q: "Seorang siswa memalsukan identitas di media sosial untuk menipu orang lain. Tindakan ini bertentangan dengan nilai …", options: ["Zuhud", "Ikhlas", "Menjaga kehormatan dan kejujuran", "Kepedulian sosial", "Semangat belajar"], answer: 2 },
+  { q: "Media sosial dapat menjadi sarana dakwah apabila digunakan untuk …", options: ["Menyebarkan sensasi", "Menjatuhkan orang lain", "Menyampaikan pesan kebaikan dan edukasi", "Membalas komentar kasar", "Membuat konten fitnah"], answer: 2 },
+  { q: "Farhan menolak ikut menyebarkan video perkelahian pelajar karena khawatir memperburuk keadaan. Sikap Farhan menunjukkan …", options: ["Ketidakpedulian", "Tanggung jawab sosial", "Ketakutan berlebihan", "Sikap individualis", "Tidak mengikuti perkembangan media sosial"], answer: 1 },
+  { q: "Ketika menerima informasi viral tentang artis muslim yang belum jelas kebenarannya, sikap terbaik seorang pelajar adalah …", options: ["Menyebarkan dengan cepat", "Membahasnya di grup sekolah", "Melakukan tabayyun sebelum percaya", "Menambahkan komentar negatif", "Membuat meme dari berita tersebut"], answer: 2 },
+  { q: "Seorang siswa menjadi korban ejekan di media sosial karena kondisi ekonominya. Dampak terbesar dari cyberbullying tersebut adalah …", options: ["Menambah motivasi belajar", "Menumbuhkan rasa percaya diri", "Meningkatkan solidaritas kelas", "Membuat siswa lebih terkenal", "Menyebabkan tekanan mental dan hilang rasa aman"], answer: 4 },
+  { q: "Seseorang sengaja membuat komentar kasar di media sosial karena merasa akun anonimnya tidak diketahui. Sikap tersebut menunjukkan bahwa ia …", options: ["Memahami etika digital", "Bertanggung jawab", "Menyalahgunakan kebebasan bermedia sosial", "Memiliki keberanian berpendapat", "Menjaga kehormatan diri"], answer: 2 },
+  { q: "Banyak remaja mengikuti tren konten prank yang mempermalukan orang lain demi mendapatkan banyak pengikut. Berdasarkan ajaran Islam, tindakan tersebut sebaiknya …", options: ["Dilanjutkan selama menghasilkan uang", "Dihindari karena merendahkan martabat orang lain", "Diikuti agar terkenal", "Dibolehkan jika tidak ketahuan", "Dijadikan hiburan sekolah"], answer: 1 },
+  { q: "Dalam sebuah diskusi online, Aldi tetap menggunakan bahasa santun meskipun berbeda pendapat dengan orang lain. Sikap Aldi mencerminkan …", options: ["Takut berpendapat", "Etika komunikasi Islami", "Sikap riya", "Ketidakpedulian", "Sikap lemah"], answer: 1 },
+  { q: "Dina mengunggah video temannya yang sedang menangis karena dimarahi guru. Video tersebut akhirnya menjadi bahan ejekan di media sosial. Perilaku Dina menunjukkan …", options: ["Kepedulian terhadap teman", "Etika digital yang baik", "Sikap menjaga kehormatan teman", "Pelanggaran etika dan membuka aib orang lain", "Sikap empati sosial"], answer: 3 },
+  { q: "Terkait QS. Yunus/10: 41, interpretasi yang <strong>tidak termasuk</strong> makna kandungan isi ayat tersebut adalah …", options: ["Setiap yang menjadi pilihan dalam hidup akan diminta tanggung jawabnya", "Keyakinan yang menjadi pilihan seseorang merupakan hak asasi yang mendasar", "Menghargai dan menghormati pilihan orang lain dalam hal keyakinan", "Tugas dalam berdakwah hanya sekedar menyampaikan bukan dengan memaksa", "Dalam Islam tidak dikenal adanya dosa waris yang dilimpahkan dari seseorang"], answer: 3 },
+  { q: "Kerjasama antarumat beragama yang <strong>tidak diperbolehkan</strong> adalah …", options: ["Kerjasama bidang sosial", "Kerjasama bidang ibadah", "Kerjasama bidang politik", "Kerjasama bidang pertanian", "Kerjasama bidang ekonomi"], answer: 1 },
+  { q: "Di bawah ini adalah beberapa hikmah dari toleransi antarumat beragama, <strong>kecuali</strong> …", options: ["Berpikir positif terhadap keberadaan agama lain", "Dapat memaksa penganut agama lain untuk memeluk Islam", "Menyadari bahwa hidup ini tidak bisa terlepas dari orang lain", "Membangun tradisi dialog antaragama", "Saling menghormati dan menghargai antarpemeluk agama"], answer: 2 },
+  { q: "QS. Yunus: 41 mengajarkan kita dalam menyikapi orang-orang yang mendustakan Al-Qur'an dengan cara mengatakan …", options: ["Bagiku pekerjaanku dan bagimu pekerjaanmu", "Bagiku agamaku dan bagimu agamamu", "Tuhanku tidak sama dengan Tuhanmu", "Kamu bukan penyembah Tuhan yang aku sembah", "Aku tidak bertanggung jawab atas perbuatanmu"], answer: 0 },
+  { q: "Sikap toleransi adalah suatu sikap yang harus dijunjung tinggi dalam interaksi sosial masyarakat, karena …", options: ["Toleransi menenteramkan kehidupan masyarakat", "Toleransi diajarkan di sekolah/madrasah", "Toleransi terdapat pada undang-undang", "Toleransi merupakan terpecahnya solidaritas", "Toleransi bukan syarat utama dalam masyarakat"], answer: 0 },
+];
+
+const labels = ['A','B','C','D','E'];
+const userAnswers = new Array(questions.length).fill(null);
+let submitted = false;
+let currentFilter = 'all';
+
+function render() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const isAnswered = userAnswers[i] !== null;
+    const isCorrect = submitted && userAnswers[i] === q.answer;
+    const isWrong = submitted && userAnswers[i] !== null && userAnswers[i] !== q.answer;
+    if (currentFilter === 'unanswered' && isAnswered) return;
+    if (currentFilter === 'answered' && !isAnswered) return;
+
+    const card = document.createElement('div');
+    card.className = 'question-card'
+      + (submitted && isCorrect ? ' correct' : '')
+      + (submitted && isWrong ? ' wrong' : '')
+      + (!submitted && isAnswered ? ' answered' : '');
+
+    const numClass = submitted && isCorrect ? 'correct-num' : submitted && isWrong ? 'wrong-num' : '';
+
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num ${numClass}">${i+1}</div>
+        <div class="q-text">${q.q}</div>
+      </div>
+      <div class="options">
+        ${q.options.map((opt, j) => {
+          let cls = '';
+          if (submitted) {
+            if (j === q.answer) cls = 'correct-ans';
+            else if (userAnswers[i] === j && j !== q.answer) cls = 'wrong-ans';
+          } else if (userAnswers[i] === j) cls = 'selected';
+          return `<button class="option ${cls}" onclick="selectAnswer(${i}, ${j})" ${submitted ? 'disabled' : ''}>
+            <span class="option-label">${labels[j]}</span>
+            <span>${opt}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      ${submitted ? `<div class="q-result show ${isCorrect ? 'success' : 'danger'}">
+        ${isCorrect
+          ? '✓ Benar'
+          : userAnswers[i] === null
+            ? '— Tidak dijawab. Jawaban benar: ' + labels[q.answer]
+            : '✗ Salah. Jawaban yang benar: ' + labels[q.answer]}
+      </div>` : ''}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qIndex, optIndex) {
+  if (submitted) return;
+  userAnswers[qIndex] = optIndex;
+  updateStatus();
+  render();
+}
+
+function updateStatus() {
+  const answered = userAnswers.filter(a => a !== null).length;
+  document.getElementById('answered-count').textContent = answered;
+  document.getElementById('progress').style.width = Math.round(answered / questions.length * 100) + '%';
+  const btn = document.getElementById('submit-btn');
+  if (submitted) {
+    btn.disabled = true;
+    btn.textContent = 'Selesai';
+    const correct = userAnswers.filter((a, i) => a === questions[i].answer).length;
+    document.getElementById('summary-text').innerHTML =
+      `Nilai akhir: <strong>${correct}/${questions.length}</strong> benar &nbsp;·&nbsp; ${Math.round(correct/questions.length*100)}%`;
+  } else {
+    btn.disabled = answered < questions.length;
+    document.getElementById('summary-text').textContent = answered === questions.length
+      ? 'Semua soal sudah dijawab. Siap dikumpulkan!'
+      : `${questions.length - answered} soal belum dijawab`;
+  }
+}
+
+function submitAll() {
+  if (submitted) return;
+  submitted = true;
+  updateStatus();
+  render();
+}
+
+function filterQuestions(type) {
+  currentFilter = type;
+  document.querySelectorAll('.controls .btn').forEach((b, i) => {
+    b.className = 'btn' + (['all','unanswered','answered'][i] === type ? ' active' : '');
+  });
+  render();
+}
+
+render();
+updateStatus();
+</script>
+</body>
+</html>
